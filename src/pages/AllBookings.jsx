@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import { FaEye } from "react-icons/fa";
 import apiClient from "../api/apiConfig";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const AllBookings = () => {
   const [data, setData] = useState([]);
@@ -23,28 +23,19 @@ const AllBookings = () => {
           size: itemsPerPage,
           sortBy: "id",
           sortDirection: "desc",
-        }
+        },
       });
 
       if (!response.data || !Array.isArray(response.data.content)) {
         throw new Error("Invalid data format received from server");
       }
 
-      console.log("API Response:", response.data);
-      console.log("Single booking object:", response.data.content[0]);
-
-      // Process booking data without user API calls
-      const bookingsWithSerialNumbers = response.data.content.map((booking, index) => {
-        const userId = booking.userId || booking.user_id || booking.customerId;
-        const bookingId = booking.bookingId || booking.id || booking.booking_id;
-        
-        return {
+      const bookingsWithSerialNumbers = response.data.content.map(
+        (booking, index) => ({
           ...booking,
-          bookingId: bookingId,
           serialNumber: currentPage * itemsPerPage + index + 1,
-          userId: userId || 'N/A',
-        };
-      });
+        })
+      );
 
       setData(bookingsWithSerialNumbers);
       setTotalItems(response.data.totalElements || 0);
@@ -60,24 +51,27 @@ const AllBookings = () => {
   useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
     fetchBookings();
   }, [currentPage, fetchBookings]);
 
   const handleView = (booking) => {
-    const id = booking.bookingId || booking.id;
-    if (id) {
-      navigate(`${id}`);
-    } else {
-      toast.error("Invalid booking ID");
-    }
-  };
+  console.log("Booking object:", booking);
+  const id = booking.id;
+  console.log("Booking ID:", id);
+  if (id) {
+    navigate(`${id}`);
+  } else {
+    toast.error("Invalid booking ID");
+  }
+};
 
-  // Filter data based on search query
-  const filteredData = data.filter(booking => 
-    booking.userId?.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-    booking.status?.toLowerCase().includes(searchQuery.toLowerCase())
+
+  const filteredData = data.filter(
+    (booking) =>
+      booking.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      booking.status?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -119,29 +113,43 @@ const AllBookingsList = ({
         <h3 className="text-xl font-bold text-indigo-900">All Bookings</h3>
         <input
           type="text"
-          placeholder="Search by user ID or status..."
+          placeholder="Search by username or status..."
           className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64 text-sm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
-
       <div className="overflow-x-auto shadow-md rounded-lg">
         <table className="w-full text-sm text-left">
           <thead className="text-xs uppercase bg-indigo-900 text-white">
             <tr>
-              <th scope="col" className="px-6 py-3">Sr. No.</th>
-              <th scope="col" className="px-6 py-3">User ID</th>
-              <th scope="col" className="px-6 py-3">Start Date</th>
-              <th scope="col" className="px-6 py-3">End Date</th>
-              <th scope="col" className="px-6 py-3">Status</th>
-              <th scope="col" className="px-6 py-3">Action</th>
+              <th scope="col" className="px-6 py-3">
+                Sr. No.
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Username
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Start Date
+              </th>
+              <th scope="col" className="px-6 py-3">
+                End Date
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Vehicle Reg. No.
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="6" className="text-center py-6">
+                <td colSpan="7" className="text-center py-6">
                   <div className="flex justify-center items-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-900"></div>
                     <span className="ml-2">Loading...</span>
@@ -150,36 +158,55 @@ const AllBookingsList = ({
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan="6" className="text-center py-6 text-gray-500">
+                <td colSpan="7" className="text-center py-6 text-gray-500">
                   No bookings found
                 </td>
               </tr>
             ) : (
               data.map((item, index) => (
-                <tr key={item.bookingId || item.id || index} className={`border-b hover:bg-indigo-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                <tr
+                  key={item.id || index}
+                  className={`border-b hover:bg-indigo-50 transition-colors ${
+                    index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                  }`}
+                >
                   <td className="px-6 py-4 font-medium">{item.serialNumber}</td>
-                  <td className="px-6 py-4">{item.userId}</td>
+                  <td className="px-6 py-4">{item.username}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {item.startDate ? new Date(item.startDate).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }) : 'N/A'}
+                    {item.startDate
+                      ? new Date(item.startDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {item.endDate ? new Date(item.endDate).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }) : 'N/A'}
+                    {item.endDate
+                      ? new Date(item.endDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "N/A"}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium
-                      ${item.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                        item.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                        item.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-indigo-100 text-indigo-800'}`}>
-                      {item.status || 'N/A'}
+                    {item.vehicleRegistrationNumber}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium
+                      ${
+                        item.status === "COMPLETED"
+                          ? "bg-green-100 text-green-800"
+                          : item.status === "CANCELLED"
+                          ? "bg-red-100 text-red-800"
+                          : item.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-indigo-100 text-indigo-800"
+                      }`}
+                    >
+                      {item.status || "N/A"}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -197,10 +224,11 @@ const AllBookingsList = ({
           </tbody>
         </table>
       </div>
-
       <div className="flex justify-between items-center mt-6">
         <p className="text-sm text-gray-600">
-          Showing {currentPage * itemsPerPage + 1} to {Math.min((currentPage + 1) * itemsPerPage, totalItems)} of {totalItems} entries
+          Showing {currentPage * itemsPerPage + 1} to{" "}
+          {Math.min((currentPage + 1) * itemsPerPage, totalItems)} of{" "}
+          {totalItems} entries
         </p>
         <div className="flex space-x-1">
           <button
