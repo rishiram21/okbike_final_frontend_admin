@@ -409,6 +409,18 @@ const BookingDetails = ({
               <p className="text-indigo-600 mt-1">{userDetails?.phoneNumber || 'N/A'}</p>
               <p className="text-sm text-gray-600 mt-3">{selectedBooking.address}</p>
               <p className="text-xs italic text-gray-500 mt-1">Address Type: {selectedBooking.addressType}</p>
+              {/* <p className="text-xs italic text-gray-500 mt-1">Address Type: {selectedBooking.deliveryLocation}</p> */}
+{selectedBooking.deliveryLocation ? (() => {
+  const location = JSON.parse(selectedBooking.deliveryLocation);
+  return (
+    <p className="text-xs italic text-gray-500 mt-1">
+      Address : {location.fullAddress}, Near {location.nearby}, PIN {location.pinCode}
+    </p>
+  );
+})() : (
+  <p className="text-xs italic text-gray-500 mt-1">Address : N/A</p>
+)}
+
             </div>
           </div>
 
