@@ -869,19 +869,13 @@ const Home = () => {
         });
         
         const bookingsData = response.data.content || [];
+        console.log(bookingsData);
         
         // Fetch usernames for each booking
-        const bookingWithUsernames = await Promise.all(
-          bookingsData.map(async (booking) => {
-            try {
-              const userResponse = await apiClient.get(`/users/${booking.userId}`);
-              return { ...booking, userName: userResponse.data.name };
-            } catch (userError) {
-              console.error(`Error fetching username for booking ID ${booking.id}:`, userError);
-              return { ...booking, userName: 'Unknown' };
-            }
-          })
-        );
+        const bookingWithUsernames = bookingsData.map(booking => ({
+  ...booking,
+  userName: booking.username || 'Unknown'
+}));
 
         setBookings(bookingWithUsernames);
 
