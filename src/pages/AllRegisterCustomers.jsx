@@ -3,13 +3,14 @@ import { FaEye, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import apiClient from "../api/apiConfig";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from 'axios';
 
 const AllRegisterCustomers = () => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
   const [viewMode, setViewMode] = useState(false);
@@ -77,7 +78,21 @@ const AllRegisterCustomers = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentData = filteredData
 
-  const handleView = (user) => {
+  // const handleView = (user) => {
+  //   setSelectedUser(user);
+  //   setViewMode(true);
+  //   setDocumentStatus({
+  //     aadharFrontSide: user.aadharFrontStatus || 'PENDING',
+  //     aadharBackSide: user.aadharBackStatus || 'PENDING',
+  //     drivingLicense: user.drivingLicenseStatus || 'PENDING',
+  //   });
+  // };
+
+  const handleView = async (userId) => {
+  try {
+    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/users/${userId}`);
+    const user = response.data;
+
     setSelectedUser(user);
     setViewMode(true);
     setDocumentStatus({
@@ -85,7 +100,11 @@ const AllRegisterCustomers = () => {
       aadharBackSide: user.aadharBackStatus || 'PENDING',
       drivingLicense: user.drivingLicenseStatus || 'PENDING',
     });
-  };
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    toast.error("Failed to fetch user data");
+  }
+};
 
   const handleBack = () => {
     setViewMode(false);
@@ -275,13 +294,21 @@ const AllRegisterCustomers = () => {
                         <td className="px-6 py-4">{user.phoneNumber}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-2">
-                            <button
+                            {/* <button
                               className="px-3 py-1.5 flex items-center text-white bg-indigo-800 hover:bg-indigo-600 rounded"
                               onClick={() => handleView(user)}
                             >
                               <FaEye className="mr-1.5" size={14} />
                               View
-                            </button>
+                            </button> */}
+                            <button
+  className="px-3 py-1.5 flex items-center text-white bg-indigo-800 hover:bg-indigo-600 rounded"
+  onClick={() => handleView(user.id)}
+>
+  <FaEye className="mr-1.5" size={14} />
+  View
+</button>
+
                           </div>
                         </td>
                       </tr>

@@ -60,42 +60,82 @@ const BookingDetailPage = () => {
 
   const totalAdditionalCharges = useMemo(() => charges.reduce((sum, charge) => sum + Number(charge.amount), 0), [charges]);
 
+  // const fetchBookingDetails = useCallback(async () => {
+  //   try {
+  //     const response = await apiClient.get(`/booking/combined/${bookingId}`);
+  //     const bookingData = {
+  //       ...response.data.booking,
+  //       vehicle: response.data.vehicle,
+  //       store: response.data.store,
+  //       vehicleImageUrl: response.data.vehicle.image,
+  //       vehiclePackage: response.data.vehiclePackage,
+  //       additionalCharges: response.data.booking.additionalCharges,
+  //       vehicleNumber: response.data.vehicle.vehicleRegistrationNumber,
+  //       userName: response.data.user.name,
+  //       userPhone: response.data.user.phoneNumber
+  //     };
+
+  //     setSelectedBooking(bookingData);
+  //     setBookingStatus(bookingData.status || BookingStatus.CONFIRMED);
+
+  //     const userResponse = await apiClient.get(`/users/${bookingData.userId}`);
+  //     setUserDetails(userResponse.data);
+  //     setDocumentStatus({
+  //       aadharFrontSide: userResponse.data.aadharFrontStatus || 'PENDING',
+  //       aadharBackSide: userResponse.data.aadharBackStatus || 'PENDING',
+  //       drivingLicense: userResponse.data.drivingLicenseStatus || 'PENDING',
+  //     });
+
+  //     setCharges([
+  //       { type: 'Additional', amount: bookingData.additionalCharges || 0 },
+  //     ]);
+
+
+  //     setChargesEditable(bookingData.status !== BookingStatus.COMPLETED);
+  //   } catch (error) {
+  //     console.error("Error fetching booking details:", error);
+  //   }
+  // }, [bookingId]);
+
+
   const fetchBookingDetails = useCallback(async () => {
-    try {
-      const response = await apiClient.get(`/booking/combined/${bookingId}`);
-      const bookingData = {
-        ...response.data.booking,
-        vehicle: response.data.vehicle,
-        store: response.data.store,
-        vehicleImageUrl: response.data.vehicle.image,
-        vehiclePackage: response.data.vehiclePackage,
-        additionalCharges: response.data.booking.additionalCharges,
-        vehicleNumber: response.data.vehicle.vehicleRegistrationNumber,
-        userName: response.data.user.name,
-        userPhone: response.data.user.phoneNumber
-      };
+  try {
+    const { data } = await apiClient.get(`/booking/combined/${bookingId}`);
+    const { booking, vehicle, store, user, vehiclePackage } = data;
 
-      setSelectedBooking(bookingData);
-      setBookingStatus(bookingData.status || BookingStatus.CONFIRMED);
+    const bookingData = {
+      ...booking,
+      vehicle,
+      store,
+      vehicleImageUrl: vehicle.image || '/default-vehicle.png',
+      vehiclePackage,
+      additionalCharges: booking.additionalCharges || 0,
+      vehicleNumber: vehicle.vehicleRegistrationNumber,
+      userName: user.name,
+      userPhone: user.phoneNumber
+    };
 
-      const userResponse = await apiClient.get(`/users/${bookingData.userId}`);
-      setUserDetails(userResponse.data);
-      setDocumentStatus({
-        aadharFrontSide: userResponse.data.aadharFrontStatus || 'PENDING',
-        aadharBackSide: userResponse.data.aadharBackStatus || 'PENDING',
-        drivingLicense: userResponse.data.drivingLicenseStatus || 'PENDING',
-      });
+    setSelectedBooking(bookingData);
+    setBookingStatus(bookingData.status || BookingStatus.CONFIRMED);
+    setUserDetails(user);
 
-      setCharges([
-        { type: 'Additional', amount: bookingData.additionalCharges || 0 },
-      ]);
+    setDocumentStatus({
+      aadharFrontSide: user.aadharFrontStatus || 'PENDING',
+      aadharBackSide: user.aadharBackStatus || 'PENDING',
+      drivingLicense: user.drivingLicenseStatus || 'PENDING',
+    });
 
+    setCharges([{ type: 'Additional', amount: bookingData.additionalCharges }]);
 
-      setChargesEditable(bookingData.status !== BookingStatus.COMPLETED);
-    } catch (error) {
-      console.error("Error fetching booking details:", error);
-    }
-  }, [bookingId]);
+    setChargesEditable(
+      bookingData.status !== BookingStatus.COMPLETED &&
+      bookingData.status !== BookingStatus.CANCELLED
+    );
+  } catch (error) {
+    console.error("Error fetching booking details:", error);
+  }
+}, [bookingId]);
+
 
   useEffect(() => {
     fetchBookingDetails();
