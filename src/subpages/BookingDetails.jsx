@@ -12,6 +12,7 @@ const BookingDetailPage = () => {
   const { bookingId } = useParams();
   const navigate = useNavigate();
 
+
   const BookingStatus = {
     CONFIRMED: "Confirmed",
     BOOKING_ACCEPTED: "Booking Accepted",
@@ -21,6 +22,7 @@ const BookingDetailPage = () => {
 
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
+
   const [bookingStatus, setBookingStatus] = useState(BookingStatus.CONFIRMED);
   const [documentStatus, setDocumentStatus] = useState({
     aadharFrontSide: 'PENDING',

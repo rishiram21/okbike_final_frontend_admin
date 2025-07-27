@@ -121,29 +121,54 @@ const totalAmount =
       id="invoice-container"
       className="bg-white rounded-lg shadow-xl border border-gray-200 max-w-3xl mx-auto print:shadow-none print:border-none print:rounded-none print:max-w-none print:mx-0"
     >
+      
+    {/* Watermark */}
+      <div className="watermark"></div>
+
       {/* Add print-specific styles */}
       <style jsx>{`
+        .watermark {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+        }
+
+        .watermark::before {
+          content: "OkBike";
+          color: rgba(0, 0, 0, 0.1);
+          font-size: 6rem;
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+
         @media print {
           @page {
             margin: 0.5in;
             size: A4;
           }
-          
+
           body {
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
           }
-          
+
           /* Hide everything except the invoice */
           body * {
             visibility: hidden;
           }
-          
+
           #invoice-container,
           #invoice-container * {
             visibility: visible;
           }
-          
+
           #invoice-container {
             position: absolute;
             left: 0;
